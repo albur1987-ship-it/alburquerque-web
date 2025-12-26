@@ -1,12 +1,169 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Menu, X, Phone, Mail, MapPin, CheckCircle, 
-  Wrench, Settings, Activity, Zap, Shield, 
-  Briefcase, ChevronRight, Star, ArrowRight,
-  Factory, Cog, Hammer, Sun, LayoutGrid, Battery,
-  Download, Leaf, MessageCircle, Instagram, Facebook, ArrowUp,
-  Tag, Clock, AlertCircle, ShoppingBag, Gauge
+  Menu, X, Phone, Mail, MapPin, 
+  Settings, Activity, Zap, Shield, 
+  ChevronRight, Star, ArrowRight,
+  Factory, Sun, LayoutGrid, Battery,
+  Leaf, MessageCircle, Instagram, Facebook, ArrowUp,
+  Tag, ShoppingBag, Gauge
 } from 'lucide-react';
+
+// --- Componentes Auxiliares (Definidos antes de ser usados) ---
+
+// Iconos personalizados simples
+const ChartIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className || "w-8 h-8 text-blue-600"}>
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+  </svg>
+);
+
+const TargetIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="10"></circle>
+    <circle cx="12" cy="12" r="6"></circle>
+    <circle cx="12" cy="12" r="2"></circle>
+  </svg>
+);
+
+const EyeIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+    <circle cx="12" cy="12" r="3"></circle>
+  </svg>
+);
+
+// Componente Logo Inteligente (Corregido con useState)
+const CompanyLogo = ({ name, domain, localSrc, className = "" }) => {
+  const [imgError, setImgError] = useState(false);
+  const webLogo = domain ? `https://logo.clearbit.com/${domain}` : null;
+  const imageSource = localSrc || webLogo;
+
+  return (
+    <div className={`flex items-center justify-center h-20 w-full p-2 bg-white rounded-lg border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all duration-300 ${className}`}>
+      {!imgError && imageSource ? (
+        <img 
+          src={imageSource}
+          alt={`Logo ${name}`} 
+          className="max-h-14 max-w-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center font-bold text-gray-400 text-xs text-center">
+          {name}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente de Carrusel de Imágenes
+const ImageCarousel = ({ images, interval = 3000, className = "h-48 rounded-t-xl group-hover:h-52", indicatorActiveClass }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [images, interval]);
+
+  if (!images || images.length === 0) return null;
+
+  const activeDotClass = indicatorActiveClass || 'bg-orange-500 w-6';
+
+  return (
+    <div className={`relative w-full overflow-hidden transition-all duration-300 ${className}`}>
+      {images.map((img, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            index === currentIndex ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <img 
+            src={img} 
+            alt={`Imagen ${index + 1}`} 
+            className="w-full h-full object-cover transform scale-105 animate-ken-burns"
+            onError={(e) => {
+               // Evitar bucle infinito y poner imagen genérica
+               e.target.onerror = null; 
+               e.target.src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800";
+            }} 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        </div>
+      ))}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1.5 z-10">
+        {images.map((_, index) => (
+          <div 
+            key={index}
+            className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${
+              index === currentIndex ? activeDotClass : 'bg-white/70 w-2'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Slider de Productos (Para WEG) - Agregado onError y prevención de bucles
+const ProductSlider = ({ products }) => {
+  return (
+    <div className="overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+      <div className="flex space-x-4 w-max">
+        {products.map((prod, index) => (
+          <div key={index} className="w-48 bg-white rounded-xl shadow-md border border-gray-100 p-4 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1 group">
+            <div className="w-full h-32 bg-gray-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative border-b-4 border-transparent group-hover:border-orange-500 transition-all">
+               {prod.image ? (
+                 <img 
+                   src={prod.image} 
+                   alt={prod.name} 
+                   className="w-full h-full object-cover" 
+                   onError={(e) => {
+                     e.target.onerror = null; // Detener intentos repetidos
+                     e.target.style.display = 'none'; // Ocultar imagen rota
+                     e.target.parentNode.innerHTML = '<div class="flex items-center justify-center h-full w-full text-gray-400 text-xs text-center p-2 bg-gray-100">Imagen no disponible</div>';
+                   }}
+                 />
+               ) : (
+                 <div className="text-blue-600 group-hover:text-orange-500 transition-colors">{prod.icon}</div>
+               )}
+            </div>
+            <h4 className="font-bold text-gray-800 text-sm text-center leading-tight group-hover:text-orange-600 transition-colors">{prod.name}</h4>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Marquee Infinito para Clientes
+const ClientMarquee = ({ clients }) => {
+  return (
+    <div className="relative w-full overflow-hidden bg-white py-10 border-t border-orange-100">
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10"></div>
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10"></div>
+      
+      <div className="flex w-max animate-scroll">
+        {[...clients, ...clients].map((client, index) => (
+          <div key={index} className="mx-8 w-32 md:w-48 flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
+             {client.logo ? (
+               <img src={client.logo} alt={client.name} className="max-h-16 object-contain" />
+             ) : (
+                <CompanyLogo name={client.name} domain={client.domain} className="h-20 w-full border-none shadow-none bg-transparent" />
+             )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- Componente Principal ---
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,6 +171,7 @@ const App = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showPromoBanner, setShowPromoBanner] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
+  const [logoError, setLogoError] = useState(false); // Estado para el logo principal
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,129 +203,6 @@ const App = () => {
   const closePromo = () => {
     setShowPromoBanner(false);
     setPromoDismissed(true);
-  };
-
-  // --- Componente de Carrusel de Imágenes ---
-  const ImageCarousel = ({ images, interval = 3000, className = "h-48 rounded-t-xl group-hover:h-52", indicatorActiveClass }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-      if (!images || images.length === 0) return;
-      const timer = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-      }, interval);
-      return () => clearInterval(timer);
-    }, [images, interval]);
-
-    if (!images || images.length === 0) return null;
-
-    const activeDotClass = indicatorActiveClass || 'bg-orange-500 w-6';
-
-    return (
-      <div className={`relative w-full overflow-hidden transition-all duration-300 ${className}`}>
-        {images.map((img, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === currentIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <img 
-              src={img} 
-              alt={`Imagen ${index + 1}`} 
-              className="w-full h-full object-cover transform scale-105 animate-ken-burns"
-              onError={(e) => {
-                 e.target.src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800";
-              }} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-          </div>
-        ))}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1.5 z-10">
-          {images.map((_, index) => (
-            <div 
-              key={index}
-              className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${
-                index === currentIndex ? activeDotClass : 'bg-white/70 w-2'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // --- Slider de Productos (Para WEG) ---
-  const ProductSlider = ({ products }) => {
-    return (
-      <div className="overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
-        <div className="flex space-x-4 w-max">
-          {products.map((prod, index) => (
-            <div key={index} className="w-48 bg-white rounded-xl shadow-md border border-gray-100 p-4 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1 group">
-              <div className="w-full h-32 bg-gray-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative border-b-4 border-transparent group-hover:border-orange-500 transition-all">
-                 {prod.image ? (
-                   <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
-                 ) : (
-                   <div className="text-blue-600 group-hover:text-orange-500 transition-colors">{prod.icon}</div>
-                 )}
-              </div>
-              <h4 className="font-bold text-gray-800 text-sm text-center leading-tight group-hover:text-orange-600 transition-colors">{prod.name}</h4>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // --- Marquee Infinito para Clientes ---
-  const ClientMarquee = ({ clients }) => {
-    return (
-      <div className="relative w-full overflow-hidden bg-white py-10 border-t border-orange-100">
-        <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10"></div>
-        
-        <div className="flex w-max animate-scroll">
-          {[...clients, ...clients].map((client, index) => (
-            <div key={index} className="mx-8 w-32 md:w-48 flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
-               {client.logo ? (
-                 <img src={client.logo} alt={client.name} className="max-h-16 object-contain" />
-               ) : (
-                  <CompanyLogo name={client.name} domain={client.domain} className="h-20 w-full border-none shadow-none bg-transparent" />
-               )}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  // Componente Logo Inteligente
-  const CompanyLogo = ({ name, domain, localSrc, className = "" }) => {
-    const webLogo = domain ? `https://logo.clearbit.com/${domain}` : null;
-    const imageSource = localSrc || webLogo;
-
-    return (
-      <div className={`flex items-center justify-center h-20 w-full p-2 bg-white rounded-lg border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all duration-300 ${className}`}>
-        {imageSource ? (
-          <img 
-            src={imageSource}
-            alt={`Logo ${name}`} 
-            className="max-h-14 max-w-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        
-        <div 
-            className="hidden w-full h-full flex items-center justify-center font-bold text-gray-400 text-xs text-center"
-            style={{ display: imageSource ? 'none' : 'flex' }}
-        >
-          {name}
-        </div>
-      </div>
-    );
   };
 
   // --- DATOS ---
@@ -241,7 +276,7 @@ const App = () => {
     },
     {
       title: "Balanceo Dinámico",
-      icon: <Gauge className="w-8 h-8 text-blue-600" />, // Icono importado manualmente o reutilizado
+      icon: <Gauge className="w-8 h-8 text-blue-600" />,
       items: [
         "Balanceo de piezas rotantes",
         "Rotores, ventiladores, impulsores",
@@ -272,27 +307,6 @@ const App = () => {
         "/PROYECTOS4.jpg"
       ]
     }
-  ];
-
-  const specializedImages = [
-    "/ESPECIALIZADOS1.jpg", 
-    "/ESPECIALIZADOS2.jpg", 
-    "/ESPECIALIZADOS3.jpg",
-    "/ESPECIALIZADOS4.jpg"
-  ];
-
-  const wegHeaderImages = [
-    "/WEG1.jpg",
-    "/WEG2.jpg",
-    "/WEG3.jpg",
-    "/WEG4.jpg"
-  ];
-
-  const heroImages = [
-    "/PRINCIPAL1.jpg", 
-    "/PRINCIPAL2.jpg", 
-    "/PRINCIPAL3.jpg", 
-    "/PRINCIPAL4.jpg"
   ];
 
   const wegProducts = [
@@ -514,20 +528,19 @@ const App = () => {
         <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="relative group">
-              <img 
-                src="/TITULO1.jpg" 
-                alt="Alburquerque Logo" 
-                className="h-16 md:h-20 w-auto object-contain rounded-md shadow-sm border border-white/20 hidden"
-                onLoad={(e) => e.target.classList.remove('hidden')}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  const fallback = e.target.nextSibling;
-                  if(fallback) fallback.style.display = 'flex';
-                }}
-              />
-              <div className="flex bg-blue-900 text-white rounded font-serif font-bold text-3xl items-center justify-center w-12 h-12 border-2 border-orange-500 shadow-lg">
-                A
-              </div>
+              {/* Lógica corregida para el Logo Principal usando Estado */}
+              {!logoError ? (
+                <img 
+                  src="/TITULO1.jpg" 
+                  alt="Alburquerque Logo" 
+                  className="h-16 md:h-20 w-auto object-contain rounded-md shadow-sm border border-white/20"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <div className="flex bg-blue-900 text-white rounded font-serif font-bold text-3xl items-center justify-center w-12 h-12 border-2 border-orange-500 shadow-lg">
+                  A
+                </div>
+              )}
             </div>
             
             <div className="hidden sm:block">
@@ -715,7 +728,7 @@ const App = () => {
               <div className="p-8 md:p-10 text-white md:w-1/2 flex flex-col justify-center">
                 <div className="flex items-center mb-4">
                    <div className="bg-blue-800 p-2 rounded-lg mr-4 border border-blue-700">
-                    <Settings className="w-8 h-8 animate-spin-slow text-orange-400" />
+                    <Settings className="w-8 h-8 text-orange-400" />
                    </div>
                    <h3 className="text-2xl md:text-3xl font-bold">Servicios Especializados</h3>
                 </div>
@@ -973,29 +986,5 @@ const App = () => {
     </div>
   );
 };
-
-// Simple Icons Components for unique needs
-const ChartIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className || "w-8 h-8 text-blue-600"}>
-    <line x1="18" y1="20" x2="18" y2="10"></line>
-    <line x1="12" y1="20" x2="12" y2="4"></line>
-    <line x1="6" y1="20" x2="6" y2="14"></line>
-  </svg>
-);
-
-const TargetIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="10"></circle>
-    <circle cx="12" cy="12" r="6"></circle>
-    <circle cx="12" cy="12" r="2"></circle>
-  </svg>
-);
-
-const EyeIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-    <circle cx="12" cy="12" r="3"></circle>
-  </svg>
-);
 
 export default App;
