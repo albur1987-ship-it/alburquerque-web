@@ -5,12 +5,12 @@ import {
   ChevronRight, Star, ArrowRight,
   Factory, Sun, LayoutGrid, Battery,
   Leaf, MessageCircle, Instagram, Facebook, ArrowUp,
-  Tag, ShoppingBag, Gauge
+  Tag, ShoppingBag, Gauge, Briefcase
 } from 'lucide-react';
 
-// --- Componentes Auxiliares (Definidos antes de ser usados) ---
+// --- Componentes Auxiliares ---
 
-// Iconos personalizados simples
+// Iconos SVG simples para evitar dependencias extrañas
 const ChartIcon = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className || "w-8 h-8 text-blue-600"}>
     <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -34,26 +34,25 @@ const EyeIcon = ({ className }) => (
   </svg>
 );
 
-// Componente Logo Inteligente (Corregido con useState)
-const CompanyLogo = ({ name, domain, localSrc, className = "" }) => {
-  const [imgError, setImgError] = useState(false);
-  const webLogo = domain ? `https://logo.clearbit.com/${domain}` : null;
-  const imageSource = localSrc || webLogo;
+// Componente Logo Simplificado (Sin llamadas externas riesgosas)
+const CompanyLogo = ({ name, className = "" }) => {
+  // Genera un color de fondo sutil basado en el nombre para dar variedad
+  const getColor = (str) => {
+    const colors = ['bg-blue-50', 'bg-orange-50', 'bg-green-50', 'bg-gray-50', 'bg-indigo-50'];
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
 
   return (
-    <div className={`flex items-center justify-center h-20 w-full p-2 bg-white rounded-lg border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all duration-300 ${className}`}>
-      {!imgError && imageSource ? (
-        <img 
-          src={imageSource}
-          alt={`Logo ${name}`} 
-          className="max-h-14 max-w-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300 opacity-80 hover:opacity-100"
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center font-bold text-gray-400 text-xs text-center">
-          {name}
+    <div className={`flex items-center justify-center h-20 w-full p-2 rounded-lg border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all duration-300 ${getColor(name)} ${className}`}>
+        <div className="flex flex-col items-center justify-center">
+            <span className="font-black text-gray-700 text-lg uppercase tracking-wider text-center leading-none">
+              {name}
+            </span>
         </div>
-      )}
     </div>
   );
 };
@@ -85,11 +84,11 @@ const ImageCarousel = ({ images, interval = 3000, className = "h-48 rounded-t-xl
         >
           <img 
             src={img} 
-            alt={`Imagen ${index + 1}`} 
+            alt={`Slide ${index + 1}`} 
             className="w-full h-full object-cover transform scale-105 animate-ken-burns"
             onError={(e) => {
-               // Evitar bucle infinito y poner imagen genérica
                e.target.onerror = null; 
+               // Imagen segura de respaldo
                e.target.src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800";
             }} 
           />
@@ -110,7 +109,7 @@ const ImageCarousel = ({ images, interval = 3000, className = "h-48 rounded-t-xl
   );
 };
 
-// Slider de Productos (Para WEG) - Agregado onError y prevención de bucles
+// Slider de Productos
 const ProductSlider = ({ products }) => {
   return (
     <div className="overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
@@ -124,9 +123,9 @@ const ProductSlider = ({ products }) => {
                    alt={prod.name} 
                    className="w-full h-full object-cover" 
                    onError={(e) => {
-                     e.target.onerror = null; // Detener intentos repetidos
-                     e.target.style.display = 'none'; // Ocultar imagen rota
-                     e.target.parentNode.innerHTML = '<div class="flex items-center justify-center h-full w-full text-gray-400 text-xs text-center p-2 bg-gray-100">Imagen no disponible</div>';
+                     e.target.onerror = null;
+                     e.target.style.display = 'none';
+                     e.target.parentNode.innerHTML = '<div class="flex items-center justify-center h-full w-full text-gray-400 text-xs text-center p-2 bg-gray-100">Ver Catálogo</div>';
                    }}
                  />
                ) : (
@@ -141,7 +140,7 @@ const ProductSlider = ({ products }) => {
   );
 };
 
-// Marquee Infinito para Clientes
+// Marquee Infinito para Clientes - Simplificado
 const ClientMarquee = ({ clients }) => {
   return (
     <div className="relative w-full overflow-hidden bg-white py-10 border-t border-orange-100">
@@ -151,11 +150,7 @@ const ClientMarquee = ({ clients }) => {
       <div className="flex w-max animate-scroll">
         {[...clients, ...clients].map((client, index) => (
           <div key={index} className="mx-8 w-32 md:w-48 flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
-             {client.logo ? (
-               <img src={client.logo} alt={client.name} className="max-h-16 object-contain" />
-             ) : (
-                <CompanyLogo name={client.name} domain={client.domain} className="h-20 w-full border-none shadow-none bg-transparent" />
-             )}
+             <CompanyLogo name={client.name} className="h-16 w-full border-none shadow-none bg-transparent" />
           </div>
         ))}
       </div>
@@ -171,7 +166,7 @@ const App = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showPromoBanner, setShowPromoBanner] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
-  const [logoError, setLogoError] = useState(false); // Estado para el logo principal
+  const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -205,7 +200,7 @@ const App = () => {
     setPromoDismissed(true);
   };
 
-  // --- DATOS ---
+  // --- DATOS SEGUROS ---
 
   const offers = []; 
 
@@ -213,7 +208,7 @@ const App = () => {
     title: "¡Servicio Destacado del Mes!",
     service: "Balanceo Dinámico In-Situ",
     desc: "Evite paradas imprevistas. Diagnóstico y corrección de vibraciones en su planta.",
-    image: "/MANTENIMIENTO1.jpg"
+    image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&q=80&w=600"
   };
 
   const services = [
@@ -226,17 +221,12 @@ const App = () => {
         "Motores de dos velocidades",
         "Motores de corriente continua (CC)",
         "Bombas de eje libre",
-        "Bobinas encapsuladas frenos electromagnéticos",
-        "Máquinas de soldar y Generadores",
-        "Reductores de velocidad",
-        "Bombas centrífugas",
-        "Bombas sumergibles portátiles"
+        "Bobinas encapsuladas frenos electromagnéticos"
       ],
       images: [
-        "/BOBINADOS1.jpg",
-        "/BOBINADOS2.jpg",
-        "/BOBINADOS3.jpg",
-        "/BOBINADOS4.jpg"
+        "https://images.unsplash.com/photo-1621905252507-b35a5f8b2950?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=500"
       ]
     },
     {
@@ -250,10 +240,8 @@ const App = () => {
         "Mecanizado de precisión"
       ],
       images: [
-        "/TORNERIA1.jpg",
-        "/TORNERIA2.jpg",
-        "/TORNERIA3.jpg",
-        "/TORNERIA4.jpg"
+        "https://images.unsplash.com/photo-1531973576160-7125cd663d86?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&q=80&w=500"
       ]
     },
     {
@@ -263,15 +251,11 @@ const App = () => {
         "Medición y análisis de vibraciones",
         "Termografía infrarroja",
         "Alineación de ejes y poleas (Láser SKF)",
-        "Ensayos de Resistencia de Aislación",
-        "Índice de Polarización (IP) y DAR",
-        "Medición de resistencia óhmica"
+        "Ensayos de Resistencia de Aislación"
       ],
       images: [
-        "/MANTENIMIENTO1.jpg",
-        "/MANTENIMIENTO2.jpg",
-        "/MANTENIMIENTO3.jpg",
-        "/MANTENIMIENTO4.jpg"
+        "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=500"
       ]
     },
     {
@@ -284,10 +268,8 @@ const App = () => {
         "Balanceos IN SITU en equipos rotantes"
       ],
       images: [
-        "/BALANCEO1.jpg",
-        "/BALANCEO2.jpg",
-        "/BALANCEO3.jpg",
-        "/BALANCEO4.jpg"
+        "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=500"
       ]
     },
     {
@@ -297,14 +279,11 @@ const App = () => {
         "Instalaciones eléctricas integrales",
         "Tableros de comando, control y medición",
         "Sistemas contra incendio",
-        "Montajes con grúa y obras civiles",
-        "Puesta a tierra y bandejas porta cables"
+        "Montajes con grúa y obras civiles"
       ],
       images: [
-        "/PROYECTOS1.jpg",
-        "/PROYECTOS2.jpg",
-        "/PROYECTOS3.jpg",
-        "/PROYECTOS4.jpg"
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=500"
       ]
     }
   ];
@@ -322,103 +301,51 @@ const App = () => {
   const otherBrands = [
     { 
       name: "CZERWENY", 
-      domain: "czerweny.com.ar",
-      localLogo: "/czerweny.png",
-      // Verde
       colorClass: "text-green-600",
       borderClass: "hover:border-green-600",
       textClass: "group-hover:text-green-700",
       indicatorClass: "bg-green-600 w-6",
-      products: [
-        "Motores Trifásicos y Monofásicos",
-        "Bombas Centrífugas",
-        "Bombas Sumergibles",
-        "Bombas de Achique y Cloacales",
-        "Servicio Técnico OFICIAL"
-      ],
-      images: [
-        "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=400"
-      ]
+      products: ["Motores Trifásicos", "Bombas Centrífugas", "Servicio Técnico"],
+      images: ["https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=400"]
     },
     { 
       name: "TAURO", 
-      domain: "tauro.com.ar",
-      localLogo: "/tauro.png",
-      // Amarillo / Ámbar
       colorClass: "text-amber-600",
       borderClass: "hover:border-amber-500",
       textClass: "group-hover:text-amber-600",
       indicatorClass: "bg-amber-500 w-6",
-      products: [
-        "Máquinas de Soldar Rectificadores",
-        "Soldadoras Inverter",
-        "Equipos MAG / MIG",
-        "Corte por Plasma",
-        "Accesorios de Soldadura"
-      ],
-      images: [
-        "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1531973576160-7125cd663d86?auto=format&fit=crop&q=80&w=400"
-      ]
+      products: ["Soldadoras Inverter", "Equipos MAG / MIG", "Corte por Plasma"],
+      images: ["https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=400"]
     },
     { 
       name: "SAER", 
-      domain: "saerelettropompe.com",
-      localLogo: "/saer.png",
-      // Cian / Azul claro
       colorClass: "text-cyan-600",
       borderClass: "hover:border-cyan-500",
       textClass: "group-hover:text-cyan-600",
       indicatorClass: "bg-cyan-500 w-6",
-      products: [
-        "Elettropompe (Electrobombas)",
-        "Bombas de Pozo Profundo",
-        "Bombas de Superficie",
-        "Sistemas de Presurización",
-        "Alta Eficiencia Energética"
-      ],
-      images: [
-        "https://images.unsplash.com/photo-1621252179027-94459d27d3ee?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=400"
-      ]
+      products: ["Electrobombas", "Bombas de Pozo", "Alta Eficiencia"],
+      images: ["https://images.unsplash.com/photo-1621252179027-94459d27d3ee?auto=format&fit=crop&q=80&w=400"]
     },
     { 
       name: "MEC", 
-      domain: "",
-      localLogo: "/mec.png",
-      // Verde
       colorClass: "text-green-600",
       borderClass: "hover:border-green-500",
       textClass: "group-hover:text-green-600",
       indicatorClass: "bg-green-500 w-6",
-      products: [
-        "Reductores Sin Fin y Corona",
-        "Motores Eléctricos",
-        "Soluciones de Energía Renovable",
-        "Transmisión de Potencia"
-      ],
-      images: [
-        "https://images.unsplash.com/photo-1497435334941-8c699ee63e0d?auto=format&fit=crop&q=80&w=400",
-        "https://images.unsplash.com/photo-1581093458791-9f302e683837?auto=format&fit=crop&q=80&w=400"
-      ]
+      products: ["Reductores", "Motores Eléctricos", "Transmisión"],
+      images: ["https://images.unsplash.com/photo-1497435334941-8c699ee63e0d?auto=format&fit=crop&q=80&w=400"]
     }
   ];
 
   const clients = [
-    { name: "YPF", domain: "ypf.com" },
-    { name: "Quilmes", domain: "cerveceriaymalteriaquilmes.com" },
-    { name: "Ledesma", domain: "ledesma.com.ar" },
-    { name: "Scania", domain: "scania.com" },
-    { name: "Arcadium Lithium", domain: "arcadiumlithium.com" },
-    { name: "Papelera Tucumán", domain: "papeleratucuman.com.ar" },
-    { name: "Citrusvil", domain: "citrusvil.com.ar" },
-    { name: "Ingenio San Isidro", domain: "ingeniosanisidro.com.ar" },
-    { name: "ALPLA", domain: "alpla.com" },
-    { name: "San Miguel", domain: "sanmiguelglobal.com" },
-    { name: "YMAD", domain: "ymad.com.ar" },
-    { name: "Santista", domain: "santista.com.ar" },
-    { name: "Grupo Budeguer", domain: "grupobudeguer.com" }
+    { name: "YPF" },
+    { name: "Quilmes" },
+    { name: "Ledesma" },
+    { name: "Scania" },
+    { name: "Arcadium" },
+    { name: "Papelera" },
+    { name: "Citrusvil" },
+    { name: "San Miguel" }
   ];
 
   const projects = [
@@ -426,28 +353,19 @@ const App = () => {
       client: "ALPLA",
       title: "Motor Compresor 600 HP",
       desc: "Servicio integral: desmontaje, bobinado, cambio de punta de eje y alineado láser.",
-      images: [
-        "/ALPLA1.jpg",
-        "/ALPLA2.jpg"
-      ]
+      images: ["https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=500"]
     },
     {
       client: "Papelera Tucumán",
       title: "Motor 510 KW - CC",
       desc: "Mantenimiento general en parada programada, montaje y alineación de ejes.",
-      images: [
-        "/PAPELERA1.jpg",
-        "/PAPELERA2.jpg"
-      ]
+      images: ["https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=500"]
     },
     {
       client: "Arcadium Lithium",
       title: "Ensayos In Company",
       desc: "Jornada de ensayos de aislación, IP, absorción y resistencia en Salar del Hombre Muerto.",
-      images: [
-        "/ARCADIUM1.jpg",
-        "/ARCADIUM2.jpg"
-      ]
+      images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=500"]
     }
   ];
 
@@ -528,7 +446,7 @@ const App = () => {
         <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="relative group">
-              {/* Lógica corregida para el Logo Principal usando Estado */}
+              {/* Logo Principal con Fallback Seguro */}
               {!logoError ? (
                 <img 
                   src="/TITULO1.jpg" 
@@ -585,7 +503,12 @@ const App = () => {
       <section id="inicio" className="relative h-screen overflow-hidden">
         <div className="absolute inset-0 z-0">
            <ImageCarousel 
-              images={["/PRINCIPAL1.jpg", "/PRINCIPAL2.jpg", "/PRINCIPAL3.jpg", "/PRINCIPAL4.jpg"]} 
+              images={[
+                "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200",
+                "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=1200",
+                "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=1200",
+                "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=1200"
+              ]} 
               className="h-full w-full rounded-none" 
               interval={6000} 
            />
@@ -646,11 +569,11 @@ const App = () => {
         </div>
       </section>
 
-      {/* OFERTAS ESPECIALES SECTION (Estado "Sin ofertas") */}
+      {/* OFERTAS ESPECIALES SECTION */}
       <section id="ofertas" className="py-20 bg-blue-50 border-y border-blue-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center mb-12">
-            <Tag className="w-8 h-8 text-red-600 mr-3 animate-pulse" />
+            <Tag className="w-8 h-8 text-red-600 mr-3" />
             <h2 className="text-3xl font-bold text-gray-800">Ofertas Especiales</h2>
           </div>
           
@@ -682,7 +605,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* SERVICES SECTION (Grid 3 columnas) */}
+      {/* SERVICES SECTION */}
       <section id="servicios" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -739,7 +662,7 @@ const App = () => {
               
               <div className="md:w-1/2 h-64 md:h-auto min-h-[300px] relative">
                 <ImageCarousel 
-                  images={["/ESPECIALIZADOS1.jpg", "/ESPECIALIZADOS2.jpg", "/ESPECIALIZADOS3.jpg", "/ESPECIALIZADOS4.jpg"]} 
+                  images={["https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=600"]} 
                   className="h-full w-full absolute inset-0 rounded-none" 
                   interval={4000}
                 />
@@ -763,7 +686,7 @@ const App = () => {
         {/* WEG FULL WIDTH SECTION */}
         <div className="relative w-full h-[60vh] overflow-hidden">
            <ImageCarousel 
-              images={["/WEG1.jpg", "/WEG2.jpg", "/WEG3.jpg", "/WEG4.jpg"]} 
+              images={["https://images.unsplash.com/photo-1555443204-74d3000b5033?auto=format&fit=crop&q=80&w=1200"]} 
               className="h-full w-full" 
               interval={5000} 
            />
@@ -807,16 +730,10 @@ const App = () => {
               {otherBrands.map((brand, idx) => (
                 <div key={idx} className={`group bg-gray-50 rounded-xl hover:shadow-md transition-all border border-gray-100 overflow-hidden flex flex-col ${brand.borderClass}`}>
                   <div className="p-6 bg-white border-b border-gray-100">
-                     <CompanyLogo 
-                        name={brand.name} 
-                        domain={brand.domain} 
-                        localSrc={brand.localLogo}
-                        className="h-16 bg-transparent border-none shadow-none" 
-                     />
+                     <CompanyLogo name={brand.name} className="h-16 bg-transparent border-none shadow-none" />
                   </div>
                   <div className="flex-grow p-4">
                     <h4 className={`font-bold text-center mb-1 transition-colors ${brand.textClass}`}>{brand.name}</h4>
-                    <p className="text-xs text-center text-gray-500 mb-4">{brand.desc}</p>
                     
                     {/* Lista de productos detallada */}
                     <div className="mb-4 space-y-1">
