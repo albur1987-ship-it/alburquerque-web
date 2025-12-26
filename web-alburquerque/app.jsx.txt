@@ -1,0 +1,808 @@
+import React, { useState, useEffect } from 'react';
+
+// --- ICONOS (SVG Integrados para máxima compatibilidad) ---
+const Icon = ({ children, className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    {children}
+  </svg>
+);
+
+const Icons = {
+  Menu: (p) => <Icon {...p}><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></Icon>,
+  X: (p) => <Icon {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>,
+  Phone: (p) => <Icon {...p}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></Icon>,
+  Mail: (p) => <Icon {...p}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></Icon>,
+  MapPin: (p) => <Icon {...p}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></Icon>,
+  ChevronRight: (p) => <Icon {...p}><polyline points="9 18 15 12 9 6"/></Icon>,
+  ArrowRight: (p) => <Icon {...p}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></Icon>,
+  ArrowUp: (p) => <Icon {...p}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></Icon>,
+  Star: (p) => <Icon {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>,
+  Settings: (p) => <Icon {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Icon>,
+  Activity: (p) => <Icon {...p}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></Icon>,
+  Zap: (p) => <Icon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></Icon>,
+  Factory: (p) => <Icon {...p}><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><line x1="17" y1="9" x2="17" y2="9"/></Icon>,
+  Shield: (p) => <Icon {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></Icon>,
+  MessageCircle: (p) => <Icon {...p}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></Icon>,
+  LayoutGrid: (p) => <Icon {...p}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></Icon>,
+  Battery: (p) => <Icon {...p}><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/></Icon>,
+  Sun: (p) => <Icon {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></Icon>,
+  Tag: (p) => <Icon {...p}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></Icon>,
+  ShoppingBag: (p) => <Icon {...p}><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></Icon>,
+  Gauge: (p) => <Icon {...p}><path d="M12 22s-4-9-5.5-12.5a5.5 5.5 0 1 1 11 0C16 13 12 22 12 22Z"/><circle cx="12" cy="10" r="3"/></Icon>,
+  Leaf: (p) => <Icon {...p}><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.77 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></Icon>,
+  Instagram: (p) => <Icon {...p}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></Icon>,
+  Facebook: (p) => <Icon {...p}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></Icon>,
+  Chart: (p) => <Icon {...p}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></Icon>,
+  Target: (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></Icon>,
+  Eye: (p) => <Icon {...p}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></Icon>
+};
+
+// --- COMPONENTES AUXILIARES ---
+
+const CompanyLogo = ({ name, className = "" }) => {
+  const getColor = (str) => {
+    const colors = ['bg-blue-50', 'bg-orange-50', 'bg-green-50', 'bg-gray-50', 'bg-indigo-50'];
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  return (
+    <div className={`flex items-center justify-center h-20 w-full p-2 rounded-lg border border-gray-100 hover:border-orange-200 hover:shadow-sm transition-all duration-300 ${getColor(name)} ${className}`}>
+        <div className="flex flex-col items-center justify-center">
+            <span className="font-black text-gray-700 text-lg uppercase tracking-wider text-center leading-none">
+              {name}
+            </span>
+        </div>
+    </div>
+  );
+};
+
+const ImageCarousel = ({ images, interval = 3000, className = "h-48 rounded-t-xl group-hover:h-52", indicatorActiveClass }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!images || images.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [images, interval]);
+
+  if (!images || images.length === 0) return null;
+
+  const activeDotClass = indicatorActiveClass || 'bg-orange-500 w-6';
+
+  return (
+    <div className={`relative w-full overflow-hidden transition-all duration-300 ${className}`}>
+      {images.map((img, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            index === currentIndex ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <img 
+            src={img} 
+            alt={`Slide ${index + 1}`} 
+            className="w-full h-full object-cover transform scale-105"
+            onError={(e) => {
+               e.currentTarget.onerror = null; 
+               e.currentTarget.src = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800";
+            }} 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        </div>
+      ))}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1.5 z-10">
+        {images.map((_, index) => (
+          <div 
+            key={index}
+            className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${
+              index === currentIndex ? activeDotClass : 'bg-white/70 w-2'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ProductSlider = ({ products }) => {
+  return (
+    <div className="overflow-x-auto pb-6 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
+      <div className="flex space-x-4 w-max">
+        {products.map((prod, index) => (
+          <div key={index} className="w-48 bg-white rounded-xl shadow-md border border-gray-100 p-4 flex flex-col items-center hover:shadow-lg transition-all transform hover:-translate-y-1 group">
+            <div className="w-full h-32 bg-gray-50 rounded-lg mb-3 flex items-center justify-center overflow-hidden relative border-b-4 border-transparent group-hover:border-orange-500 transition-all">
+               {prod.image ? (
+                 <img 
+                   src={prod.image} 
+                   alt={prod.name} 
+                   className="w-full h-full object-cover" 
+                   onError={(e) => {
+                     e.currentTarget.onerror = null;
+                     e.currentTarget.parentElement.innerHTML = '<div class="flex items-center justify-center h-full w-full text-gray-400 text-xs text-center p-2 bg-gray-100">Ver Catálogo</div>';
+                   }}
+                 />
+               ) : (
+                 <div className="text-blue-600 group-hover:text-orange-500 transition-colors">{prod.icon}</div>
+               )}
+            </div>
+            <h4 className="font-bold text-gray-800 text-sm text-center leading-tight group-hover:text-orange-600 transition-colors">{prod.name}</h4>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const ClientMarquee = ({ clients }) => {
+  return (
+    <div className="relative w-full overflow-hidden bg-white py-10 border-t border-orange-100">
+      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white to-transparent z-10"></div>
+      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent z-10"></div>
+      
+      <div className="flex w-max animate-scroll">
+        {[...clients, ...clients].map((client, index) => (
+          <div key={index} className="mx-8 w-32 md:w-48 flex items-center justify-center grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100">
+             <CompanyLogo name={client.name} className="h-16 w-full border-none shadow-none bg-transparent" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENTE PRINCIPAL ---
+
+const App = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showPromoBanner, setShowPromoBanner] = useState(false);
+  const [promoDismissed, setPromoDismissed] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => {
+    // Debug para verificar que la app monta
+    console.log("App de Alburquerque SRL iniciada correctamente.");
+    
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+      setShowScrollTop(window.scrollY > 500);
+      if (window.scrollY > 300 && !promoDismissed) {
+        setShowPromoBanner(true);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [promoDismissed]);
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const scrollToSection = (id) => {
+    setIsMenuOpen(false);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closePromo = () => {
+    setShowPromoBanner(false);
+    setPromoDismissed(true);
+  };
+
+  // --- DATOS ---
+
+  const featuredService = {
+    title: "¡Servicio Destacado del Mes!",
+    service: "Balanceo Dinámico In-Situ",
+    desc: "Evite paradas imprevistas. Diagnóstico y corrección de vibraciones en su planta.",
+    image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&q=80&w=600"
+  };
+
+  const services = [
+    {
+      title: "Bobinados y Servicios",
+      icon: <Icons.Activity className="w-8 h-8 text-blue-600" />,
+      items: [
+        "Motores baja tensión hasta 900 HP",
+        "Mantenimiento media tensión hasta 1500 HP",
+        "Motores de dos velocidades",
+        "Motores de corriente continua (CC)",
+        "Bombas de eje libre"
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1621905252507-b35a5f8b2950?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=500"
+      ]
+    },
+    {
+      title: "Tornería en General",
+      icon: <Icons.Settings className="w-8 h-8 text-blue-600" />,
+      items: [
+        "Fabricación de Ejes y Poleas",
+        "Chaveteros y Rellenados",
+        "Encamisados y Bujes",
+        "Construcción de piezas especiales s/plano",
+        "Mecanizado de precisión"
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1531973576160-7125cd663d86?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&q=80&w=500"
+      ]
+    },
+    {
+      title: "Mantenimiento Predictivo",
+      icon: <Icons.Chart className="w-8 h-8 text-blue-600" />,
+      items: [
+        "Medición y análisis de vibraciones",
+        "Termografía infrarroja",
+        "Alineación de ejes y poleas (Láser SKF)",
+        "Ensayos de Resistencia de Aislación"
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=500"
+      ]
+    },
+    {
+      title: "Balanceo Dinámico",
+      icon: <Icons.Gauge className="w-8 h-8 text-blue-600" />,
+      items: [
+        "Balanceo de piezas rotantes",
+        "Rotores, ventiladores, impulsores",
+        "Equilibradora computalizada última tecnología",
+        "Balanceos IN SITU en equipos rotantes"
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=500"
+      ]
+    },
+    {
+      title: "Proyectos y Montajes",
+      icon: <Icons.Factory className="w-8 h-8 text-blue-600" />,
+      items: [
+        "Instalaciones eléctricas integrales",
+        "Tableros de comando, control y medición",
+        "Sistemas contra incendio",
+        "Montajes con grúa y obras civiles"
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=500",
+        "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=500"
+      ]
+    }
+  ];
+
+  const wegProducts = [
+    { name: "Motores Eléctricos", icon: <Icons.Zap className="w-8 h-8" />, image: "https://images.unsplash.com/photo-1555443204-74d3000b5033?auto=format&fit=crop&q=80&w=400" },
+    { name: "Automatización", icon: <Icons.Settings className="w-8 h-8" />, image: "https://images.unsplash.com/photo-1580983218765-f663bec07b37?auto=format&fit=crop&q=80&w=400" },
+    { name: "Tableros Eléctricos", icon: <Icons.LayoutGrid className="w-8 h-8" />, image: "https://images.unsplash.com/photo-1563212727-2c94236965be?auto=format&fit=crop&q=80&w=400" },
+    { name: "Generadores", icon: <Icons.Battery className="w-8 h-8" />, image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=400" },
+    { name: "Transformadores", icon: <Icons.Zap className="w-8 h-8" />, image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&q=80&w=400" },
+    { name: "Paneles Solares", icon: <Icons.Sun className="w-8 h-8" />, image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=400" },
+    { name: "Arranque y Protección", icon: <Icons.Shield className="w-8 h-8" />, image: null },
+  ];
+
+  const otherBrands = [
+    { 
+      name: "CZERWENY", 
+      colorClass: "text-green-600",
+      borderClass: "hover:border-green-600",
+      textClass: "group-hover:text-green-700",
+      indicatorClass: "bg-green-600 w-6",
+      products: ["Motores Trifásicos", "Bombas Centrífugas", "Servicio Técnico"],
+      images: ["https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=400"]
+    },
+    { 
+      name: "TAURO", 
+      colorClass: "text-amber-600",
+      borderClass: "hover:border-amber-500",
+      textClass: "group-hover:text-amber-600",
+      indicatorClass: "bg-amber-500 w-6",
+      products: ["Soldadoras Inverter", "Equipos MAG / MIG", "Corte por Plasma"],
+      images: ["https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=400"]
+    },
+    { 
+      name: "SAER", 
+      colorClass: "text-cyan-600",
+      borderClass: "hover:border-cyan-500",
+      textClass: "group-hover:text-cyan-600",
+      indicatorClass: "bg-cyan-500 w-6",
+      products: ["Electrobombas", "Bombas de Pozo", "Alta Eficiencia"],
+      images: ["https://images.unsplash.com/photo-1621252179027-94459d27d3ee?auto=format&fit=crop&q=80&w=400"]
+    },
+    { 
+      name: "MEC", 
+      colorClass: "text-green-600",
+      borderClass: "hover:border-green-500",
+      textClass: "group-hover:text-green-600",
+      indicatorClass: "bg-green-500 w-6",
+      products: ["Reductores", "Motores Eléctricos", "Transmisión"],
+      images: ["https://images.unsplash.com/photo-1497435334941-8c699ee63e0d?auto=format&fit=crop&q=80&w=400"]
+    }
+  ];
+
+  const clients = [
+    { name: "YPF" }, { name: "Quilmes" }, { name: "Ledesma" }, 
+    { name: "Scania" }, { name: "Arcadium" }, { name: "Papelera" },
+    { name: "Citrusvil" }, { name: "San Miguel" }
+  ];
+
+  const projects = [
+    {
+      client: "ALPLA",
+      title: "Motor Compresor 600 HP",
+      desc: "Servicio integral: desmontaje, bobinado, cambio de punta de eje y alineado láser.",
+      images: ["https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=500"]
+    },
+    {
+      client: "Papelera Tucumán",
+      title: "Motor 510 KW - CC",
+      desc: "Mantenimiento general en parada programada, montaje y alineación de ejes.",
+      images: ["https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=500"]
+    },
+    {
+      client: "Arcadium Lithium",
+      title: "Ensayos In Company",
+      desc: "Jornada de ensayos de aislación, IP, absorción y resistencia en Salar del Hombre Muerto.",
+      images: ["https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=500"]
+    }
+  ];
+
+  const whatsappNumber = "5493815735930";
+  const whatsappMessage = "Hola Alburquerque SRL, me gustaría solicitar más información sobre sus servicios.";
+
+  return (
+    <div className="font-sans text-gray-800 bg-gray-50 relative">
+      
+      {/* BANNER FLOTANTE DE SERVICIO DESTACADO */}
+      <div className={`fixed left-6 bottom-24 z-40 max-w-2xl bg-white rounded-2xl shadow-3xl border-l-[12px] border-orange-500 overflow-hidden transform transition-all duration-700 ease-out ${showPromoBanner ? 'translate-x-0 opacity-100' : '-translate-x-[200%] opacity-0'}`}>
+        <div className="relative">
+          <button onClick={closePromo} className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 rounded-full p-2 text-gray-600 transition-colors z-20">
+            <Icons.X className="w-5 h-5" />
+          </button>
+          <div className="flex h-56"> 
+             <div className="w-5/12 relative">
+                <img src={featuredService.image} alt="Servicio Destacado" className="absolute inset-0 w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10"></div>
+             </div>
+             <div className="w-7/12 p-8 flex flex-col justify-center">
+                <div className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-2 flex items-center">
+                   <Icons.Star className="w-4 h-4 mr-1 fill-current" />
+                   {featuredService.title}
+                </div>
+                <h4 className="text-2xl font-bold text-gray-800 mb-3 leading-tight">{featuredService.service}</h4>
+                <p className="text-base text-gray-600 mb-6 leading-relaxed">{featuredService.desc}</p>
+                <a 
+                   href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hola, me interesa el servicio destacado: ${featuredService.service}`)}`}
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="inline-flex items-center justify-center w-full bg-blue-900 hover:bg-blue-800 text-white text-base font-bold py-3 rounded-lg transition-colors shadow-md hover:shadow-lg"
+                >
+                  <Icons.MessageCircle className="w-5 h-5 mr-2" />
+                  Consultar Ahora
+                </a>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTÓN VOLVER ARRIBA */}
+      <button onClick={scrollToTop} className={`fixed bottom-24 right-6 z-40 bg-orange-600 text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:bg-orange-700 hover:-translate-y-1 ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`} aria-label="Volver arriba">
+        <Icons.ArrowUp className="w-6 h-6" />
+      </button>
+
+      {/* BOTÓN FLOTANTE DE WHATSAPP */}
+      <a href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`} target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 z-50 group flex items-center justify-center" aria-label="Contactar por WhatsApp">
+        <span className="absolute right-full mr-3 bg-white text-gray-800 px-3 py-1.5 rounded-lg shadow-md text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none hidden md:block border-l-4 border-green-500">
+          ¡Consultanos por WhatsApp!
+        </span>
+        <div className="bg-[#25D366] hover:bg-[#20b858] text-white p-4 rounded-full shadow-2xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-110 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" className="w-8 h-8">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+          </svg>
+        </div>
+      </a>
+
+      {/* HEADER / NAVIGATION */}
+      <header className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
+        <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="relative group">
+              {!logoError ? (
+                <img 
+                  src="/TITULO1.jpg" 
+                  alt="Alburquerque Logo" 
+                  className="h-16 md:h-20 w-auto object-contain rounded-md shadow-sm border border-white/20"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <div className="flex bg-blue-900 text-white rounded font-serif font-bold text-3xl items-center justify-center w-12 h-12 border-2 border-orange-500 shadow-lg">A</div>
+              )}
+            </div>
+            
+            <div className="hidden sm:block">
+              <h1 className={`font-bold text-xl leading-none ${scrolled ? 'text-blue-900' : 'text-white'}`}>ALBURQUERQUE</h1>
+              <p className={`text-xs tracking-wider ${scrolled ? 'text-orange-600 font-bold' : 'text-orange-400 font-bold'}`}>BOBINADOS Y SERVICIOS</p>
+            </div>
+          </div>
+
+          <nav className="hidden md:flex space-x-8">
+            {['Inicio', 'Nosotros', 'Ofertas', 'Servicios', 'Productos', 'Clientes', 'Contacto'].map((item) => (
+              <button 
+                key={item}
+                onClick={() => scrollToSection(item.toLowerCase())}
+                className={`font-medium hover:text-orange-500 transition-colors ${scrolled ? 'text-gray-700' : 'text-white'}`}
+              >
+                {item}
+              </button>
+            ))}
+          </nav>
+
+          <button className="md:hidden text-orange-500" onClick={toggleMenu}>
+            {isMenuOpen ? <Icons.X className={`w-7 h-7 ${scrolled ? 'text-gray-800' : 'text-white'}`} /> : <Icons.Menu className={`w-7 h-7 ${scrolled ? 'text-gray-800' : 'text-white'}`} />}
+          </button>
+        </div>
+
+        {isMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-4 flex flex-col items-center space-y-4">
+            {['Inicio', 'Nosotros', 'Ofertas', 'Servicios', 'Productos', 'Clientes', 'Contacto'].map((item) => (
+              <button 
+                key={item}
+                onClick={() => scrollToSection(item.toLowerCase())}
+                className="text-gray-800 font-medium py-2 hover:text-orange-600 w-full text-center"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
+
+      {/* HERO SECTION */}
+      <section id="inicio" className="relative h-screen overflow-hidden">
+        <div className="absolute inset-0 z-0">
+           <ImageCarousel 
+              images={[
+                "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200",
+                "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&q=80&w=1200",
+                "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=1200",
+                "https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=1200"
+              ]} 
+              className="h-full w-full rounded-none" 
+              interval={6000} 
+           />
+           <div className="absolute inset-0 bg-blue-900/70 mix-blend-multiply pointer-events-none"></div>
+           <div className="absolute inset-0 bg-black/30 pointer-events-none"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 z-20 relative h-full flex flex-col justify-center items-center md:items-start text-center md:text-left">
+          <div className="md:w-2/3">
+            <div className="inline-block bg-blue-600 px-4 py-1 rounded-full text-sm font-bold mb-4 uppercase tracking-wider border border-blue-400 shadow-lg text-white">
+              Más de 45 Años de Experiencia
+            </div>
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg text-white">
+              Soluciones Integrales para la <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-200">Industria</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-100 mb-8 max-w-2xl font-light leading-relaxed drop-shadow-md">
+              Especialistas en reparación de motores eléctricos, bobinados, tornería y servicios de ingeniería en Tucumán y todo el país.
+            </p>
+          </div>
+        </div>
+        
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20 text-white opacity-70 hidden md:block pointer-events-none">
+           <Icons.ArrowRight className="w-6 h-6 transform rotate-90" />
+        </div>
+      </section>
+
+      {/* ABOUT SECTION */}
+      <section id="nosotros" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Sobre Nuestra Empresa</h2>
+            <div className="h-1 w-20 bg-orange-500 mx-auto mb-6"></div>
+            <p className="text-gray-600 text-lg leading-relaxed">
+              Alburquerque S.R.L. es una empresa familiar que brinda soluciones a la industria azucarera, textil, citrícola y minera.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="bg-gray-50 p-8 rounded-xl shadow-sm border-l-4 border-blue-600 hover:shadow-lg transition-shadow duration-300">
+              <div className="flex items-center mb-4">
+                <Icons.Target className="w-8 h-8 text-blue-600 mr-3" />
+                <h3 className="text-2xl font-bold text-blue-900">Misión</h3>
+              </div>
+              <p className="text-gray-600">
+                Ofrecer soluciones integrales de mantenimiento y rebobinado, combinando experiencia con un compromiso inquebrantable con la calidad.
+              </p>
+            </div>
+            <div className="bg-gray-50 p-8 rounded-xl shadow-sm border-l-4 border-orange-500 hover:shadow-lg transition-shadow duration-300">
+              <div className="flex items-center mb-4">
+                <Icons.Eye className="w-8 h-8 text-orange-500 mr-3" />
+                <h3 className="text-2xl font-bold text-blue-900">Visión</h3>
+              </div>
+              <p className="text-gray-600">
+                Ser reconocidos como líderes en el sector industrial, mejorando los estándares de la industria y siendo un aliado estratégico.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* OFERTAS ESPECIALES SECTION */}
+      <section id="ofertas" className="py-20 bg-blue-50 border-y border-blue-100">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center mb-12">
+            <Icons.Tag className="w-8 h-8 text-red-600 mr-3" />
+            <h2 className="text-3xl font-bold text-gray-800">Ofertas Especiales</h2>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-md p-10 text-center border border-blue-100 max-w-2xl mx-auto">
+              <div className="inline-block bg-blue-50 p-6 rounded-full mb-6">
+                  <Icons.ShoppingBag className="w-12 h-12 text-blue-300" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-700 mb-2">Próximamente Nuevas Ofertas</h3>
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                Estamos actualizando nuestro catálogo. ¡Volvé pronto para descubrir oportunidades exclusivas!
+              </p>
+              <a href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hola, quisiera consultar si tienen alguna oferta vigente o lista de precios.")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-colors shadow-lg hover:shadow-blue-500/30">
+                 <Icons.MessageCircle className="w-5 h-5 mr-2" />
+                 Consultar Precios Generales
+              </a>
+          </div>
+        </div>
+      </section>
+
+      {/* SERVICES SECTION */}
+      <section id="servicios" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Nuestros Servicios</h2>
+            <div className="h-1 w-20 bg-orange-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Soluciones técnicas avanzadas para cada necesidad industrial</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {services.map((service, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 group hover:-translate-y-2 border-b-4 border-transparent hover:border-orange-500 overflow-hidden">
+                <ImageCarousel images={service.images} />
+                <div className="p-6">
+                  <div className="mb-4 flex items-center">
+                    <div className="bg-blue-50 w-12 h-12 rounded-lg flex items-center justify-center mr-4 group-hover:bg-orange-500 transition-colors duration-300 shadow-sm shrink-0">
+                      <div className="text-blue-600 group-hover:text-white transition-colors duration-300 transform group-hover:scale-110">
+                        {service.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 leading-tight group-hover:text-orange-600 transition-colors">
+                      {service.title}
+                    </h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {service.items.map((item, i) => (
+                      <li key={i} className="flex items-start text-sm text-gray-600">
+                        <Icons.ChevronRight className="w-4 h-4 text-orange-400 mt-1 mr-1 flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 bg-blue-900 rounded-2xl overflow-hidden shadow-xl transform hover:scale-[1.01] transition-transform duration-300 border-b-4 border-orange-500">
+            <div className="flex flex-col md:flex-row">
+              <div className="p-8 md:p-10 text-white md:w-1/2 flex flex-col justify-center">
+                <div className="flex items-center mb-4">
+                   <div className="bg-blue-800 p-2 rounded-lg mr-4 border border-blue-700">
+                    <Icons.Settings className="w-8 h-8 text-orange-400" />
+                   </div>
+                   <h3 className="text-2xl md:text-3xl font-bold">Servicios Especializados</h3>
+                </div>
+                <p className="text-blue-100 mb-8 text-lg leading-relaxed">
+                  Realizamos mantenimientos In Situ, desmontajes especiales, trabajos en altura y soluciones a medida.
+                </p>
+              </div>
+              <div className="md:w-1/2 h-64 md:h-auto min-h-[300px] relative">
+                <ImageCarousel images={["https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=600"]} className="h-full w-full absolute inset-0 rounded-none" interval={4000} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PRODUCTS SECTION */}
+      <section id="productos" className="py-0 bg-white">
+        <div className="container mx-auto px-4 py-20 pb-10">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Productos y Soluciones</h2>
+            <div className="h-1 w-20 bg-orange-500 mx-auto"></div>
+          </div>
+        </div>
+
+        <div className="relative w-full h-[60vh] overflow-hidden">
+           <ImageCarousel images={["https://images.unsplash.com/photo-1555443204-74d3000b5033?auto=format&fit=crop&q=80&w=1200"]} className="h-full w-full" interval={5000} />
+           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-transparent flex items-center">
+              <div className="container mx-auto px-4">
+                 <div className="max-w-2xl text-white p-6 md:p-12">
+                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6 inline-block shadow-lg border border-blue-400">Distribuidor Autorizado</span>
+                   <div className="mb-6"><div className="text-7xl font-bold italic tracking-tighter mb-2">WEG</div></div>
+                   <div className="flex items-center space-x-2 text-green-400 font-bold text-xl mb-6">
+                      <Icons.Leaf className="w-6 h-6" />
+                      <span>EFICIENCIA Y SUSTENTABILIDAD</span>
+                   </div>
+                   <p className="text-gray-100 text-lg md:text-xl font-light leading-relaxed mb-8 border-l-4 border-orange-500 pl-6">Soluciones completas para la industria.</p>
+                 </div>
+              </div>
+           </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-16">
+           <div className="mb-20 -mt-24 relative z-10">
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 p-8">
+                  <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center"><Icons.Activity className="w-6 h-6 text-blue-600 mr-2"/>Línea de Productos WEG</h3>
+                  <ProductSlider products={wegProducts} />
+              </div>
+           </div>
+
+          <div>
+            <h3 className="text-2xl font-bold mb-8 text-gray-800 border-l-4 border-orange-500 pl-4">Otras Marcas Líderes</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {otherBrands.map((brand, idx) => (
+                <div key={idx} className={`group bg-gray-50 rounded-xl hover:shadow-md transition-all border border-gray-100 overflow-hidden flex flex-col ${brand.borderClass}`}>
+                  <div className="p-6 bg-white border-b border-gray-100">
+                     <CompanyLogo name={brand.name} className="h-16 bg-transparent border-none shadow-none" />
+                  </div>
+                  <div className="flex-grow p-4">
+                    <h4 className={`font-bold text-center mb-1 transition-colors ${brand.textClass}`}>{brand.name}</h4>
+                    <div className="mb-4 space-y-1">
+                        {brand.products.map((item, pIdx) => (
+                            <div key={pIdx} className="flex items-start text-xs text-gray-600"><span className={`mr-2 mt-0.5 ${brand.colorClass}`}>•</span><span>{item}</span></div>
+                        ))}
+                    </div>
+                    <ImageCarousel images={brand.images} className="h-32 rounded-lg" indicatorActiveClass={brand.indicatorClass} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PROJECTS SECTION */}
+      <section className="py-20 bg-gray-900 text-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Casos de Éxito Recientes</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {projects.map((project, idx) => (
+              <div key={idx} className="bg-gray-800 rounded-xl border border-gray-700 hover:border-orange-500 transition-all hover:transform hover:-translate-y-2 duration-300 shadow-lg hover:shadow-orange-900/20 overflow-hidden group">
+                <ImageCarousel images={project.images} className="h-48" />
+                <div className="p-6">
+                  <div className="text-orange-400 text-sm font-bold mb-2 uppercase tracking-wide">{project.client}</div>
+                  <h3 className="text-xl font-bold mb-4 group-hover:text-orange-100 transition-colors">{project.title}</h3>
+                  <p className="text-gray-400">{project.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CLIENTS SECTION */}
+      <section id="clientes" className="py-8 bg-white border-t border-orange-100">
+        <div className="text-center mb-8 px-4">
+          <h2 className="text-2xl font-bold text-gray-800">Confían en Nosotros</h2>
+          <p className="text-gray-500 mt-2 max-w-2xl mx-auto">Trabajamos con las empresas más importantes del país.</p>
+        </div>
+        <ClientMarquee clients={clients} />
+      </section>
+
+      {/* CONTACT SECTION */}
+      <section id="contacto" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">Contáctenos</h2>
+              <p className="text-gray-600 mb-8">Estamos listos para atender sus necesidades industriales.</p>
+              
+              <div className="space-y-6">
+                <div className="flex items-start group">
+                  <Icons.MapPin className="w-6 h-6 text-orange-500 mr-4 mt-1 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <h4 className="font-bold text-gray-800 group-hover:text-orange-600 transition-colors">Dirección</h4>
+                    <p className="text-gray-600">Lamadrid 3570</p>
+                    <p className="text-gray-600">San Miguel de Tucumán, Argentina</p>
+                  </div>
+                </div>
+                <div className="flex items-start group">
+                  <Icons.Phone className="w-6 h-6 text-orange-500 mr-4 mt-1 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <h4 className="font-bold text-gray-800 group-hover:text-orange-600 transition-colors">Teléfonos</h4>
+                    <p className="text-gray-600">(0381) 4230042</p>
+                    <p className="text-gray-600">(0381) 4518028</p>
+                    <p className="text-gray-600">3815735930 (Móvil)</p>
+                  </div>
+                </div>
+                <div className="flex items-start group">
+                  <Icons.Mail className="w-6 h-6 text-orange-500 mr-4 mt-1 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <h4 className="font-bold text-gray-800 group-hover:text-orange-600 transition-colors">Email</h4>
+                    <p className="text-gray-600">recepcion@alburquerquesrl.com.ar</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 rounded-xl overflow-hidden shadow-md border border-gray-200 h-64 w-full">
+                <iframe src="https://maps.google.com/maps?q=Lamadrid+3570+San+Miguel+de+Tucuman&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style={{ border: 0 }} allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Ubicación Alburquerque SRL"></iframe>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                  <input type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all" placeholder="Su nombre" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                  <input type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all" placeholder="Nombre de su empresa" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input type="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all" placeholder="correo@ejemplo.com" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
+                  <textarea rows="4" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all" placeholder="¿En qué podemos ayudarle?"></textarea>
+                </div>
+                <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1">Enviar Mensaje</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="bg-gray-800 text-white py-12 border-t border-gray-700">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div className="mb-4 md:mb-0">
+              <h2 className="text-2xl font-bold">ALBURQUERQUE S.R.L.</h2>
+              <p className="text-gray-400 text-sm mt-1">Soluciones integrales para la industria desde hace más de 45 años.</p>
+            </div>
+            
+            <div className="flex space-x-6">
+              <a href="https://instagram.com/albursrl" target="_blank" rel="noopener noreferrer" className="bg-gray-700 hover:bg-orange-600 p-2 rounded-full transition-colors group">
+                <Icons.Instagram className="w-6 h-6 text-gray-300 group-hover:text-white" />
+              </a>
+              <a href="https://facebook.com/albursrl" target="_blank" rel="noopener noreferrer" className="bg-gray-700 hover:bg-blue-600 p-2 rounded-full transition-colors group">
+                <Icons.Facebook className="w-6 h-6 text-gray-300 group-hover:text-white" />
+              </a>
+            </div>
+          </div>
+          <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+            <p>© {new Date().getFullYear()} Alburquerque S.R.L. Todos los derechos reservados.</p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="#" className="hover:text-orange-400 transition-colors">Aviso Legal</a>
+              <a href="#" className="hover:text-orange-400 transition-colors">Privacidad</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
